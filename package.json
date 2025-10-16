@@ -1,0 +1,18 @@
+{
+  "name": "student-feedback-system",
+  "version": "1.0.0",
+  "description": "Microservices-based Student Feedback System",
+  "scripts": {
+    "install:all": "npm install --prefix student-service && npm install --prefix feedback-service && npm install --prefix admin-service && npm install --prefix frontend",
+    "dev:student": "npm run dev --prefix student-service",
+    "dev:feedback": "npm run dev --prefix feedback-service",
+    "dev:admin": "npm run dev --prefix admin-service",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up",
+    "docker:down": "docker-compose down"
+  },
+  "keywords": ["microservices", "devops", "docker", "kubernetes"],
+  "author": "Kartik-Dumadiya",
+  "license": "MIT"
+}

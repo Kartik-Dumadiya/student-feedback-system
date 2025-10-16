@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # Student Service
+  student-service:
+    build:
+      context: ./student-service
+      dockerfile: Dockerfile
+    container_name: student-service
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=${MONGO_URI}
+      - STUDENT_SERVICE_PORT=3001
+    networks:
+      - feedback-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Feedback Service
+  feedback-service:
+    build:
+      context: ./feedback-service
+      dockerfile: Dockerfile
+    container_name: feedback-service
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=${MONGO_URI}
+      - FEEDBACK_SERVICE_PORT=3002
+      - STUDENT_SERVICE_URL=http://student-service:3001
+    depends_on:
+      - student-service
+    networks:
+      - feedback-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3002/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Admin Service
+  admin-service:
+    build:
+      context: ./admin-service
+      dockerfile: Dockerfile
+    container_name: admin-service
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - ADMIN_SERVICE_PORT=3003
+      - STUDENT_SERVICE_URL=http://student-service:3001
+      - FEEDBACK_SERVICE_URL=http://feedback-service:3002
+    depends_on:
+      - student-service
+      - feedback-service
+    networks:
+      - feedback-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3003/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# Docker Networks
+networks:
+  feedback-network:
+    driver: bridge
+    name: student-feedback-network

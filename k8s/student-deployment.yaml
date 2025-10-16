@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: student-service
+  namespace: student-feedback
+  labels:
+    app: student-service
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: student-service
+  template:
+    metadata:
+      labels:
+        app: student-service
+        tier: backend
+    spec:
+      containers:
+      - name: student-service
+        image: kartikdumadiya/student-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3001
+          name: http
+        env:
+        - name: STUDENT_SERVICE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: feedback-system-config
+              key: STUDENT_SERVICE_PORT
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: feedback-system-config
+              key: NODE_ENV
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: feedback-system-secret
+              key: MONGO_URI
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: student-service
+  namespace: student-feedback
+  labels:
+    app: student-service
+spec:
+  type: ClusterIP
+  selector:
+    app: student-service
+  ports:
+  - port: 3001
+    targetPort: 3001
+    protocol: TCP
+    name: http
