@@ -1,5 +1,10 @@
 name: Security Scan
 
+permissions:
+  security-events: write
+  actions: read
+  contents: read 
+  
 on:
   schedule:
     # Run security scan daily at 2 AM UTC

@@ -1,0 +1,12 @@
+{
+  "name": "seed-scripts",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Database seeding scripts",
+  "scripts": {
+    "seed": "node seed-data.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}
